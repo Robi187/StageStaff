@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm init *)",
+      "Bash(npm install *)",
+      "Bash(timeout 15 npm run dev)",
+      "Skill(firecrawl:firecrawl)",
+      "Bash(where firecrawl *)",
+      "WebFetch(domain:www.stagebar.at)",
+      "Bash(sed -i 's/background: #1e1d2e/background: #1c1916/g' /c/Users/cchou/StageBarStaffv2/StageStaff/src/views/Admin.vue /c/Users/cchou/StageBarStaffv2/StageStaff/src/views/MonthView.vue /c/Users/cchou/StageBarStaffv2/StageStaff/src/views/Schichten.vue)",
+      "Bash(sed -i \"s/color: #12111a/color: #0b0a09/g\" /c/Users/cchou/StageBarStaffv2/StageStaff/src/style.css)",
+      "Bash(Get-ChildItem -Path C:\\\\Users\\\\cchou\\\\StageBarStaffv2\\\\StageStaff\\\\backend -Depth 2 -Include *.js, *.ts, *.prisma)",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)",
+      "Bash(node prisma/dedup-occurrences.js)",
+      "Bash(Get-ChildItem C:\\\\Users\\\\cchou\\\\StageBarStaffv2\\\\StageStaff\\\\src *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\cchou\\\\StageBarStaffv2\\\\StageStaff\\\\src\" -Recurse -Filter \"*.vue\")"
+    ]
+  }
+}
