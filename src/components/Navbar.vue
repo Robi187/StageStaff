@@ -321,6 +321,8 @@ onUnmounted(() => document.removeEventListener('click', handleOutsideClick));
   display: flex;
   flex-direction: column;
   gap: 2px;
+  position: relative;
+  z-index: 150;
 }
 
 .mobile-link {
