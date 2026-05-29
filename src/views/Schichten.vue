@@ -111,8 +111,11 @@ const months = computed(() => {
     };
   }
 
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
   occurrences.value.forEach(occ => {
     const d = new Date(occ.date);
+    if (d < today) return;
     const year = d.getFullYear();
     const monthNum = d.getMonth() + 1;
     const key = `${year}-${String(monthNum).padStart(2, '0')}`;
