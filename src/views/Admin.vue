@@ -131,30 +131,26 @@
               </tr>
             </tbody>
           </table>
-          <!-- Mobile: dates as rows, user avatars as columns -->
-          <table class="matrix-table mobile-matrix">
-            <thead>
-              <tr>
-                <th class="date-col-header"></th>
-                <th v-for="user in matrixUsers" :key="user.id" class="avatar-col-header">
-                  <div class="mini-avatar">{{ user.name[0] }}</div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="occ in matrixOccs" :key="occ.id">
-                <td class="date-cell">
-                  <div class="col-wd">{{ getWdShort(occ.date) }}</div>
-                  <div class="col-date">{{ getDayNum(occ.date) }}.{{ getMonthNum(occ.date) }}</div>
-                </td>
-                <td v-for="user in matrixUsers" :key="user.id" class="status-cell">
-                  <span class="matrix-pill" :class="getMatrixClass(user.id, occ)">
-                    {{ getMatrixLabel(user.id, occ) }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <!-- Mobile: dates as rows, user avatars as columns (flexbox) -->
+          <div class="mobile-matrix">
+            <div class="mobile-row mobile-header-row">
+              <div class="mobile-date-col"></div>
+              <div class="mobile-user-col" v-for="user in matrixUsers" :key="user.id">
+                <div class="mini-avatar">{{ user.name[0] }}</div>
+              </div>
+            </div>
+            <div class="mobile-row" v-for="occ in matrixOccs" :key="occ.id">
+              <div class="mobile-date-col">
+                <div class="col-wd">{{ getWdShort(occ.date) }}</div>
+                <div class="col-date">{{ getDayNum(occ.date) }}.{{ getMonthNum(occ.date) }}</div>
+              </div>
+              <div class="mobile-user-col" v-for="user in matrixUsers" :key="user.id">
+                <span class="matrix-pill" :class="getMatrixClass(user.id, occ)">
+                  {{ getMatrixLabel(user.id, occ) }}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -838,9 +834,26 @@ async function deleteUser(id) {
 .mobile-matrix { display: none; }
 .desktop-matrix { display: table; }
 
-.date-col-header { width: 58px; }
-.avatar-col-header { text-align: center; padding: 8px 2px; }
-.date-cell { text-align: left; padding: 8px 4px; white-space: nowrap; }
+.mobile-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 0;
+}
+.mobile-header-row { padding: 6px 0; }
+.mobile-date-col {
+  width: 54px;
+  flex-shrink: 0;
+  text-align: left;
+  padding: 0 4px;
+}
+.mobile-user-col {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
 
 .matrix-table {
   width: 100%;
@@ -996,7 +1009,7 @@ async function deleteUser(id) {
   .user-actions { flex-direction: column; gap: 4px; }
   .tab-btn { padding: 10px 12px; letter-spacing: 0.1em; }
   .desktop-matrix { display: none; }
-  .mobile-matrix { display: table; min-width: unset; width: 100%; font-size: 12px; table-layout: fixed; }
+  .mobile-matrix { display: block; }
 
   .invite-url-row { flex-direction: column; }
   .btn-copy { width: 100%; justify-content: center; }
