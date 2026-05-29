@@ -104,7 +104,8 @@
         <div v-if="loadingMatrix" class="loading-state"><div class="spinner"></div></div>
         <div v-else-if="matrixOccs.length === 0" class="empty-state">Keine Termine in dieser Woche.</div>
         <div v-else class="matrix-wrapper">
-          <table class="matrix-table">
+          <!-- Desktop: users as rows, dates as columns -->
+          <table class="matrix-table desktop-matrix">
             <thead>
               <tr>
                 <th class="name-col">Mitarbeiter</th>
@@ -123,6 +124,30 @@
                   </div>
                 </td>
                 <td v-for="occ in matrixOccs" :key="occ.id" class="status-cell">
+                  <span class="matrix-pill" :class="getMatrixClass(user.id, occ)">
+                    {{ getMatrixLabel(user.id, occ) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <!-- Mobile: dates as rows, user avatars as columns -->
+          <table class="matrix-table mobile-matrix">
+            <thead>
+              <tr>
+                <th class="date-col-header"></th>
+                <th v-for="user in matrixUsers" :key="user.id" class="avatar-col-header">
+                  <div class="mini-avatar">{{ user.name[0] }}</div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="occ in matrixOccs" :key="occ.id">
+                <td class="date-cell">
+                  <div class="col-wd">{{ getWdShort(occ.date) }}</div>
+                  <div class="col-date">{{ getDayNum(occ.date) }}.{{ getMonthNum(occ.date) }}</div>
+                </td>
+                <td v-for="user in matrixUsers" :key="user.id" class="status-cell">
                   <span class="matrix-pill" :class="getMatrixClass(user.id, occ)">
                     {{ getMatrixLabel(user.id, occ) }}
                   </span>
@@ -810,6 +835,13 @@ async function deleteUser(id) {
 /* Matrix */
 .matrix-wrapper { overflow-x: auto; }
 
+.mobile-matrix { display: none; }
+.desktop-matrix { display: table; }
+
+.date-col-header { width: 52px; min-width: 52px; }
+.avatar-col-header { text-align: center; padding: 8px 4px; }
+.date-cell { text-align: left; padding: 8px 6px; white-space: nowrap; }
+
 .matrix-table {
   width: 100%;
   border-collapse: collapse;
@@ -961,12 +993,10 @@ async function deleteUser(id) {
 
 @media (max-width: 640px) {
   .shift-block-info { flex-direction: column; align-items: flex-start; gap: 4px; }
-  .matrix-table { font-size: 11px; }
   .user-actions { flex-direction: column; gap: 4px; }
-
   .tab-btn { padding: 10px 12px; letter-spacing: 0.1em; }
-
-  .matrix-table { font-size: 11px; }
+  .desktop-matrix { display: none; }
+  .mobile-matrix { display: table; min-width: unset; width: 100%; font-size: 12px; }
 
   .invite-url-row { flex-direction: column; }
   .btn-copy { width: 100%; justify-content: center; }
