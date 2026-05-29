@@ -302,8 +302,9 @@ onUnmounted(() => document.removeEventListener('click', handleOutsideClick));
 
 .hamburger span {
   display: block;
-  height: 2px;
-  background: var(--gold);
+  width: 100%;
+  height: 2.5px;
+  background: #C8B99A;
   border-radius: 2px;
   transition: transform 0.2s, opacity 0.2s;
   transform-origin: center;
