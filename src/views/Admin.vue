@@ -218,6 +218,16 @@
             <label class="form-label">Datum (erster Termin) *</label>
             <input type="date" v-model="newShift.validFrom" required />
           </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Beginn *</label>
+              <input type="time" v-model="newShift.startTime" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ende *</label>
+              <input type="time" v-model="newShift.endTime" required />
+            </div>
+          </div>
           <div v-if="createError" class="error-box">{{ createError }}</div>
           <button type="submit" class="btn-primary" :disabled="creatingShift">
             {{ creatingShift ? 'Erstelle…' : 'SCHICHT ERSTELLEN' }}
@@ -999,6 +1009,8 @@ async function deleteUser(id) {
 .modal-close:hover { color: var(--text); opacity: 1; }
 
 .modal-form { display: flex; flex-direction: column; gap: 16px; }
+.form-row { display: flex; gap: 12px; }
+.form-row .form-group { flex: 1; }
 
 .occ-shift-name { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
 
