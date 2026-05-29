@@ -838,9 +838,9 @@ async function deleteUser(id) {
 .mobile-matrix { display: none; }
 .desktop-matrix { display: table; }
 
-.date-col-header { width: 52px; min-width: 52px; }
-.avatar-col-header { text-align: center; padding: 8px 4px; }
-.date-cell { text-align: left; padding: 8px 6px; white-space: nowrap; }
+.date-col-header { width: 58px; }
+.avatar-col-header { text-align: center; padding: 8px 2px; }
+.date-cell { text-align: left; padding: 8px 4px; white-space: nowrap; }
 
 .matrix-table {
   width: 100%;
@@ -996,7 +996,7 @@ async function deleteUser(id) {
   .user-actions { flex-direction: column; gap: 4px; }
   .tab-btn { padding: 10px 12px; letter-spacing: 0.1em; }
   .desktop-matrix { display: none; }
-  .mobile-matrix { display: table; min-width: unset; width: 100%; font-size: 12px; }
+  .mobile-matrix { display: table; min-width: unset; width: 100%; font-size: 12px; table-layout: fixed; }
 
   .invite-url-row { flex-direction: column; }
   .btn-copy { width: 100%; justify-content: center; }
