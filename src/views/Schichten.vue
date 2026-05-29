@@ -4,7 +4,7 @@
 
     <div class="page-greeting">
       <p class="greeting-date">{{ todayLabel }}</p>
-      <h1 class="greeting-name">Hallo, {{ auth.user?.name?.split(' ')[0] }}</h1>
+      <h1 class="greeting-name">{{ auth.isAdmin ? 'Grüezi' : 'Hallo' }}, {{ auth.user?.name?.split(' ')[0] }}</h1>
     </div>
 
     <div v-if="loading" class="loading-state">
