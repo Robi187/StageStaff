@@ -112,17 +112,17 @@
             <div class="resp-avatar">{{ r.user.name[0].toUpperCase() }}</div>
             <div class="resp-info">
               <span class="resp-name">{{ r.user.name }}</span>
-              <div class="resp-meta">
-                <span class="resp-time">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  {{ formatResponseTime(r.updatedAt) }}
-                </span>
-                <span v-if="r.comment" class="resp-comment">· {{ r.comment }}</span>
-              </div>
+              <span v-if="r.comment" class="resp-comment">{{ r.comment }}</span>
             </div>
-            <span class="resp-badge" :class="`resp-badge--${r.status.toLowerCase()}`">
-              {{ statusLabel(r.status) }}
-            </span>
+            <div class="resp-right">
+              <span class="resp-time">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                {{ formatResponseTime(r.updatedAt) }}
+              </span>
+              <span class="resp-badge" :class="`resp-badge--${r.status.toLowerCase()}`">
+                {{ statusLabel(r.status) }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -509,15 +509,23 @@ onMounted(async () => {
 }
 
 .resp-name    { font-size: 14px; font-weight: 500; color: var(--text); }
-.resp-meta    { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 3px; }
-.resp-time    {
+.resp-comment { font-size: 12px; color: var(--muted); font-style: italic; }
+
+.resp-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.resp-time {
   display: flex; align-items: center; gap: 4px;
   font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
   color: var(--beige); opacity: 0.7;
   font-family: 'Raleway', system-ui, sans-serif;
+  white-space: nowrap;
 }
 .resp-time svg { flex-shrink: 0; }
-.resp-comment { font-size: 11px; color: var(--muted); font-style: italic; }
 
 .resp-badge {
   padding: 3px 10px;
