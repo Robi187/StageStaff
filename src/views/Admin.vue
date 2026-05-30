@@ -124,7 +124,7 @@
                   </div>
                 </td>
                 <td v-for="occ in matrixOccs" :key="occ.id" class="status-cell">
-                  <span class="matrix-pill" :class="getMatrixClass(user.id, occ)">
+                  <span class="matrix-pill" :class="getMatrixClass(user.id, occ)" :data-tooltip="getMatrixTime(user.id, occ)">
                     {{ getMatrixLabel(user.id, occ) }}
                   </span>
                 </td>
@@ -145,7 +145,7 @@
                 <div class="col-date">{{ getDayNum(occ.date) }}.{{ getMonthNum(occ.date) }}</div>
               </div>
               <div class="mobile-user-col" v-for="user in matrixUsers" :key="user.id">
-                <span class="matrix-pill" :class="getMatrixClass(user.id, occ)">
+                <span class="matrix-pill" :class="getMatrixClass(user.id, occ)" :data-tooltip="getMatrixTime(user.id, occ)">
                   {{ getMatrixLabel(user.id, occ) }}
                 </span>
               </div>
@@ -406,6 +406,14 @@ function getMatrixLabel(userId, occ) {
   if (r.status === 'JA') return 'Ja';
   if (r.status === 'NEIN') return 'Nein';
   return 'VM';
+}
+
+function getMatrixTime(userId, occ) {
+  const r = (occ.responses || []).find(r => r.userId === userId);
+  if (!r?.updatedAt) return null;
+  const d = new Date(r.updatedAt);
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}. ${pad(d.getHours())}:${pad(d.getMinutes())} Uhr`;
 }
 
 // ── Benutzer tab ─────────────────────────────────
@@ -907,6 +915,28 @@ async function deleteUser(id) {
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
+  position: relative;
+}
+
+.matrix-pill[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1727;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 6px;
+  z-index: 50;
+  pointer-events: none;
+  font-family: 'Raleway', system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 .pill-ja { background: var(--badge-green-bg); color: var(--badge-green-text); }
