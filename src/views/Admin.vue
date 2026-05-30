@@ -325,7 +325,7 @@ const lowJaOccs = computed(() => {
 const showCreateModal = ref(false);
 const creatingShift = ref(false);
 const createError = ref('');
-const newShift = ref({ title: '', validFrom: '', startTime: '20:00', endTime: '04:00' });
+const newShift = ref({ title: '', validFrom: '', startTime: '18:00', endTime: '02:00' });
 
 const showOccModal = ref(false);
 const selectedShift = ref(null);
@@ -513,7 +513,7 @@ async function createShift() {
       validFrom: newShift.value.validFrom
     });
     showCreateModal.value = false;
-    newShift.value = { title: '', validFrom: '', startTime: '20:00', endTime: '04:00' };
+    newShift.value = { title: '', validFrom: '', startTime: '18:00', endTime: '02:00' };
     appCache.invalidate('shifts', 'dashboard');
     appCache.invalidatePattern('occurrences:');
     await fetchShifts();

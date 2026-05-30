@@ -111,7 +111,10 @@
           <div v-for="r in occ.responses" :key="r.id" class="response-item">
             <div class="resp-avatar">{{ r.user.name[0].toUpperCase() }}</div>
             <div class="resp-info">
-              <span class="resp-name">{{ r.user.name }}</span>
+              <div class="resp-name-row">
+                <span class="resp-name">{{ r.user.name }}</span>
+                <span class="resp-time">{{ formatResponseTime(r.updatedAt) }}</span>
+              </div>
               <span v-if="r.comment" class="resp-comment">{{ r.comment }}</span>
             </div>
             <span class="resp-badge" :class="`resp-badge--${r.status.toLowerCase()}`">
@@ -183,6 +186,13 @@ const hasExistingResponse = computed(() => {
   if (!occ.value) return false;
   return occ.value.responses.some(r => r.userId === auth.user?.id);
 });
+
+function formatResponseTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}. ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 function statusLabel(status) {
   if (status === 'JA') return 'Ja';
@@ -495,7 +505,9 @@ onMounted(async () => {
   gap: 2px;
 }
 
+.resp-name-row { display: flex; align-items: baseline; gap: 8px; }
 .resp-name    { font-size: 14px; font-weight: 500; color: var(--text); }
+.resp-time    { font-size: 11px; color: var(--muted); font-family: 'Raleway', system-ui, sans-serif; }
 .resp-comment { font-size: 12px; color: var(--muted); font-style: italic; }
 
 .resp-badge {
