@@ -132,7 +132,7 @@ const months = computed(() => {
     groups[key].occurrences.push(occ);
   });
 
-  return Object.values(groups).sort((a, b) => a.key.localeCompare(b.key));
+  return Object.values(groups).sort((a, b) => a.key.localeCompare(b.key)).filter(m => m.occurrences.length > 0);
 });
 
 onMounted(async () => {
@@ -243,16 +243,20 @@ onMounted(async () => {
 }
 
 .month-year {
+  font-family: 'DM Mono', monospace;
   font-size: 11px;
   color: var(--very-muted);
-  font-weight: 400;
+  font-weight: 300;
   margin-bottom: 12px;
+  letter-spacing: 0.05em;
 }
 
 .month-count {
+  font-family: 'DM Mono', monospace;
   font-size: 12px;
   color: var(--muted);
   font-weight: 400;
+  letter-spacing: 0.03em;
 }
 
 /* Dots row */
