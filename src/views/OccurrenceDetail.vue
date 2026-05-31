@@ -305,7 +305,7 @@ onMounted(async () => {
 .shift-time {
   font-size: 13px;
   color: var(--muted);
-  font-family: 'Raleway', system-ui, sans-serif;
+  font-family: 'DM Mono', monospace;
 }
 
 .shift-title {
@@ -460,10 +460,10 @@ onMounted(async () => {
   background: var(--border);
   color: var(--muted);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 400;
   padding: 1px 8px;
   border-radius: 999px;
-  font-family: 'Raleway', system-ui, sans-serif;
+  font-family: 'DM Mono', monospace;
 }
 
 .no-responses {
@@ -520,9 +520,9 @@ onMounted(async () => {
 
 .resp-time {
   display: flex; align-items: center; gap: 4px;
-  font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+  font-size: 11px; font-weight: 400; letter-spacing: 0.03em;
   color: var(--beige); opacity: 0.7;
-  font-family: 'Raleway', system-ui, sans-serif;
+  font-family: 'DM Mono', monospace;
   white-space: nowrap;
 }
 .resp-time svg { flex-shrink: 0; }

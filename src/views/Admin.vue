@@ -724,7 +724,7 @@ async function deleteUser(id) {
 .low-ja-date {
   font-size: 12px;
   color: var(--text);
-  font-family: 'Raleway', system-ui, sans-serif;
+  font-family: 'DM Mono', monospace;
   min-width: 160px;
 }
 
@@ -736,8 +736,9 @@ async function deleteUser(id) {
 
 .low-ja-count {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   flex-shrink: 0;
+  font-family: 'DM Mono', monospace;
 }
 
 .count-zero { color: #ef4444; }
@@ -787,7 +788,7 @@ async function deleteUser(id) {
 
 .occ-flat-main { display: flex; align-items: center; gap: 16px; flex: 1; flex-wrap: wrap; }
 .occ-flat-title { font-size: 14px; font-weight: 500; color: var(--text); }
-.occ-flat-date { font-size: 13px; color: var(--muted); }
+.occ-flat-date { font-size: 13px; color: var(--muted); font-family: 'DM Mono', monospace; }
 
 .occ-flat-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
@@ -825,11 +826,12 @@ async function deleteUser(id) {
 
 .week-label {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text);
-  font-family: 'Raleway', system-ui, sans-serif;
+  font-family: 'DM Mono', monospace;
   text-align: center;
   flex: 1;
+  letter-spacing: 0.02em;
 }
 
 .week-arrow {
@@ -889,8 +891,8 @@ async function deleteUser(id) {
 .name-col { text-align: left; min-width: 130px; }
 .shift-col { min-width: 60px; }
 
-.col-wd { font-size: 9px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
-.col-date { font-size: 13px; font-weight: 600; color: var(--text); }
+.col-wd { font-size: 9px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; font-family: 'DM Mono', monospace; }
+.col-date { font-size: 13px; font-weight: 500; color: var(--text); font-family: 'DM Mono', monospace; }
 
 .name-cell { text-align: left; }
 .user-row-inner { display: flex; align-items: center; gap: 8px; }

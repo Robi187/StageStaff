@@ -199,7 +199,7 @@ onMounted(async () => {
 .month-year-label {
   font-size: 13px;
   color: var(--very-muted);
-  font-family: 'Raleway', system-ui, sans-serif;
+  font-family: 'DM Mono', monospace;
 }
 
 .empty-state {
@@ -276,9 +276,10 @@ onMounted(async () => {
 
 .occ-day-num {
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 300;
   color: var(--text);
   line-height: 1;
+  font-family: 'DM Mono', monospace;
 }
 
 .occ-weekday {
@@ -358,7 +359,8 @@ onMounted(async () => {
 .resp-count {
   font-size: 12px;
   color: var(--muted);
-  font-weight: 500;
+  font-weight: 400;
+  font-family: 'DM Mono', monospace;
 }
 
 .count--full      { color: #22c55e; }
