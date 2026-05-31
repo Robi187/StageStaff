@@ -936,7 +936,7 @@ async function deleteUser(id) {
   border-radius: 6px;
   z-index: 50;
   pointer-events: none;
-  font-family: 'Raleway', system-ui, sans-serif;
+  font-family: 'DM Mono', monospace;
   letter-spacing: 0.02em;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
