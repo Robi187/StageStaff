@@ -71,17 +71,6 @@
               <span class="occ-flat-date">{{ formatDate(occ.date) }}</span>
               <span v-if="occ.cancelled" class="tag tag--cancelled">Abgesagt</span>
             </div>
-            <div class="occ-flat-actions">
-              <button class="btn-delete" @click.stop="deleteShift(occ.shift.id)" title="Schicht löschen">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                  <path d="M10 11v6"/>
-                  <path d="M14 11v6"/>
-                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                </svg>
-              </button>
-            </div>
           </button>
         </div>
       </div>
@@ -532,18 +521,6 @@ async function createShift() {
   }
 }
 
-async function deleteShift(id) {
-  if (!confirm('Schicht und alle Termine wirklich löschen?')) return;
-  try {
-    await api.delete(`/shifts/${id}`);
-    appCache.invalidate('shifts', 'dashboard');
-    appCache.invalidatePattern('occurrences:');
-    await fetchShifts();
-  } catch (err) {
-    alert(err.response?.data?.error || 'Fehler beim Löschen.');
-  }
-}
-
 function openAddOccurrence(shift) {
   selectedShift.value = shift;
   newOcc.value = { date: '', deadline: '' };
@@ -789,21 +766,6 @@ async function deleteUser(id) {
 .occ-flat-main { display: flex; align-items: center; gap: 16px; flex: 1; flex-wrap: wrap; }
 .occ-flat-title { font-size: 14px; font-weight: 500; color: var(--text); }
 .occ-flat-date { font-size: 13px; color: var(--muted); font-family: 'DM Mono', monospace; }
-
-.occ-flat-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-
-.btn-delete {
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--muted);
-  padding: 6px 8px;
-  border-radius: 8px;
-  width: auto;
-  transition: color 0.15s, background 0.15s;
-}
-
-.btn-delete:hover { color: var(--error-dot); background: rgba(248, 113, 113, 0.08); opacity: 1; }
-
 
 .tag {
   font-size: 10px;
