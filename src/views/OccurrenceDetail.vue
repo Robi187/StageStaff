@@ -51,16 +51,6 @@
           </button>
         </div>
 
-        <div class="comment-group" v-if="selectedStatus">
-          <label class="form-label">Kommentar (optional)</label>
-          <textarea
-            v-model="comment"
-            rows="3"
-            maxlength="500"
-            placeholder="Anmerkung hinzufügen…"
-          ></textarea>
-        </div>
-
         <div v-if="responseError" class="error-box">{{ responseError }}</div>
         <div v-if="responseSaved" class="success-box">Antwort gespeichert.</div>
 
@@ -147,7 +137,6 @@ const occ = ref(null);
 const loading = ref(true);
 const loadError = ref('');
 const selectedStatus = ref('');
-const comment = ref('');
 const saving = ref(false);
 const toggling = ref(false);
 const responseError = ref('');
@@ -169,9 +158,8 @@ const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
                 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 
 const responseOptions = [
-  { value: 'JA',        label: 'Ich kann kommen',   cls: 'response-btn--ja' },
-  { value: 'NEIN',      label: 'Ich kann nicht',     cls: 'response-btn--nein' },
-  { value: 'VIELLEICHT',label: 'Wenn möglich frei',  cls: 'response-btn--wm' }
+  { value: 'JA',   label: 'Ich kann kommen', cls: 'response-btn--ja' },
+  { value: 'NEIN', label: 'Ich kann nicht',  cls: 'response-btn--nein' }
 ];
 
 const day = computed(() => occ.value ? new Date(occ.value.date).getDate() : '');
@@ -211,8 +199,7 @@ async function saveResponse() {
   try {
     await api.post('/responses', {
       occurrenceId: occ.value.id,
-      status: selectedStatus.value,
-      comment: comment.value || null
+      status: selectedStatus.value
     });
     responseSaved.value = true;
     const d = new Date(occ.value.date);
@@ -249,7 +236,6 @@ async function loadOccurrence() {
   const myResponse = data.responses[0];
   if (myResponse) {
     selectedStatus.value = myResponse.status;
-    comment.value = myResponse.comment || '';
   }
 }
 
@@ -361,7 +347,6 @@ onMounted(async () => {
 
 .response-btn--ja.response-btn--active   { background: var(--success-bg); border-color: #4a7e5e; color: #b8e6c5; }
 .response-btn--nein.response-btn--active  { background: var(--error-bg);   border-color: #a03535; color: #f0a0a0; }
-.response-btn--wm.response-btn--active   { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.35); color: #f59e0b; }
 
 .response-label { flex: 1; }
 
@@ -375,13 +360,6 @@ onMounted(async () => {
 }
 
 .indicator--active { background: currentColor; }
-
-.comment-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
-}
 
 .save-btn { margin-top: 4px; }
 .load-error { margin-top: 8px; }
