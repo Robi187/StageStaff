@@ -149,6 +149,7 @@
           <div class="user-select-wrap">
             <label class="cal-label">MITARBEITER</label>
             <select v-model="calUserId" class="user-select">
+              <option value="__all__">Alle Mitarbeiter</option>
               <option v-for="user in matrixUsers" :key="user.id" :value="user.id">
                 {{ user.name }}
               </option>
@@ -190,16 +191,36 @@
               <template v-if="cell.inMonth">
                 <div class="cal-day-num">{{ cell.day }}</div>
                 <div v-if="cell.occs.length > 0" class="cal-occs">
-                  <div
-                    v-for="occ in cell.occs"
-                    :key="occ.id"
-                    class="cal-occ"
-                    :class="calOccClass(occ)"
-                    :title="calOccTitle(occ)"
-                  >
-                    <span class="cal-occ-status">{{ calOccLabel(occ) }}</span>
-                    <span class="cal-occ-title">{{ occ.shift.title }}</span>
-                  </div>
+                  <template v-if="isAllUsersMode">
+                    <div
+                      v-for="occ in cell.occs"
+                      :key="occ.id"
+                      class="cal-occ cal-occ--all"
+                    >
+                      <div class="cal-occ-title-all">{{ occ.shift.title }}</div>
+                      <div class="cal-occ-users">
+                        <span
+                          v-for="user in matrixUsers"
+                          :key="user.id"
+                          class="cal-user-chip"
+                          :class="allUserChipClass(user.id, occ)"
+                          :title="allUserChipTitle(user, occ)"
+                        >{{ user.name[0] }}</span>
+                      </div>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div
+                      v-for="occ in cell.occs"
+                      :key="occ.id"
+                      class="cal-occ"
+                      :class="calOccClass(occ)"
+                      :title="calOccTitle(occ)"
+                    >
+                      <span class="cal-occ-status">{{ calOccLabel(occ) }}</span>
+                      <span class="cal-occ-title">{{ occ.shift.title }}</span>
+                    </div>
+                  </template>
                 </div>
               </template>
             </div>
@@ -540,6 +561,22 @@ const calCells = computed(() => {
   return cells;
 });
 
+const isAllUsersMode = computed(() => calUserId.value === '__all__');
+
+function allUserChipClass(userId, occ) {
+  const r = (occ.responses || []).find(r => r.userId === userId);
+  if (!r) return 'chip--none';
+  if (r.status === 'JA') return 'chip--ja';
+  if (r.status === 'NEIN') return 'chip--nein';
+  return 'chip--wm';
+}
+
+function allUserChipTitle(user, occ) {
+  const r = (occ.responses || []).find(r => r.userId === user.id);
+  const status = r ? (r.status === 'JA' ? 'Ja' : r.status === 'NEIN' ? 'Nein' : 'Vielleicht') : 'Offen';
+  return `${user.name} — ${status}`;
+}
+
 function calOccClass(occ) {
   const r = (occ.responses || []).find(r => r.userId === calUserId.value);
   if (!r) return 'cal-occ--none';
@@ -592,8 +629,8 @@ async function fetchCalMonth() {
         matrixCache.value = { ...matrixCache.value, [r.key]: r.data.occurrences };
       }
     }
-    if (!calUserId.value && matrixUsers.value.length > 0) {
-      calUserId.value = matrixUsers.value[0].id;
+    if (!calUserId.value) {
+      calUserId.value = '__all__';
     }
   } finally {
     loadingCal.value = false;
@@ -1252,6 +1289,53 @@ async function deleteUser(id) {
   font-size: 10px;
 }
 
+.cal-occ--all {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 5px 6px 6px;
+  border-left-color: var(--border);
+}
+
+.cal-occ-title-all {
+  font-size: 10px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.cal-occ-users {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.cal-user-chip {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: 'Raleway', system-ui, sans-serif;
+  line-height: 1;
+  flex-shrink: 0;
+  cursor: default;
+}
+
+.chip--ja { background: #22c55e; color: #0c1a10; }
+.chip--nein { background: #ef4444; color: #1a0808; }
+.chip--wm { background: #f59e0b; color: #1c1206; }
+.chip--none {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--very-muted);
+}
+
 .cal-occ--ja { border-left-color: #22c55e; }
 .cal-occ--ja .cal-occ-status { color: #22c55e; }
 .cal-occ--nein { border-left-color: #ef4444; }
@@ -1420,5 +1504,9 @@ async function deleteUser(id) {
   .cal-occ-title { display: none; }
   .cal-occ-status { font-size: 9px; }
   .cal-weekday { font-size: 9px; padding: 6px 2px; letter-spacing: 0.06em; }
+  .cal-occ-title-all { display: none; }
+  .cal-occ--all { padding: 3px; }
+  .cal-user-chip { width: 12px; height: 12px; font-size: 7px; }
+  .cal-occ-users { gap: 2px; }
 }
 </style>
