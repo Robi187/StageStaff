@@ -14,7 +14,10 @@
       "Bash(Sort-Object FullName)",
       "Bash(node prisma/dedup-occurrences.js)",
       "Bash(Get-ChildItem C:\\\\Users\\\\cchou\\\\StageBarStaffv2\\\\StageStaff\\\\src *)",
-      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\cchou\\\\StageBarStaffv2\\\\StageStaff\\\\src\" -Recurse -Filter \"*.vue\")"
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\cchou\\\\StageBarStaffv2\\\\StageStaff\\\\src\" -Recurse -Filter \"*.vue\")",
+      "Bash(git push *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

@@ -669,7 +669,10 @@ async function deleteUser(id) {
 .invite-desc { font-size: 12px; color: var(--muted); margin-top: 6px; }
 
 .invite-url-row { display: flex; gap: 8px; margin-bottom: 12px; }
-.invite-input { font-size: 12px; }
+.invite-input { font-size: 16px; min-width: 0; }
+@media (min-width: 641px) {
+  .invite-input { font-size: 12px; }
+}
 .btn-copy { white-space: nowrap; flex-shrink: 0; }
 .btn-generate { width: auto; }
 

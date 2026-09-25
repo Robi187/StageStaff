@@ -280,11 +280,15 @@ watch(calMonthOffset, () => fetchCalMonth());
   color: var(--text);
   border-radius: 10px;
   padding: 10px 14px;
-  font-size: 13px;
+  font-size: 16px;
   font-family: 'Raleway', system-ui, sans-serif;
   width: 100%;
   cursor: pointer;
   transition: border-color 0.15s;
+}
+
+@media (min-width: 641px) {
+  .user-select { font-size: 13px; }
 }
 .user-select:hover, .user-select:focus { border-color: var(--border-hover); outline: none; }
 

@@ -2,6 +2,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ── Design Tokens ─────────────────────────────── */
@@ -51,6 +52,8 @@
 html {
   scrollbar-width: thin;
   scrollbar-color: #332941 #1D1A26;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 ::-webkit-scrollbar { width: 4px; }
@@ -66,7 +69,11 @@ html, body {
   font-weight: 300;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
 }
+
+body { width: 100%; }
 
 #app {
   min-height: 100vh;
@@ -96,10 +103,16 @@ input, textarea, select {
   padding: 12px 16px;
   width: 100%;
   font-family: 'Raleway', system-ui, sans-serif;
-  font-size: 14px;
+  /* 16px prevents iOS Safari auto-zoom on focus */
+  font-size: 16px;
   font-weight: 400;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
+  max-width: 100%;
+}
+
+@media (min-width: 641px) {
+  input, textarea, select { font-size: 14px; }
 }
 
 input::placeholder, textarea::placeholder { color: var(--very-muted); }
@@ -121,7 +134,10 @@ button {
   font-size: 13px;
   transition: opacity 0.15s, transform 0.1s, background 0.15s, box-shadow 0.15s;
   letter-spacing: 0.05em;
+  touch-action: manipulation;
 }
+
+a, [role="button"] { touch-action: manipulation; }
 
 button:hover:not(:disabled) { opacity: 0.88; }
 button:active:not(:disabled) { transform: scale(0.98); }
