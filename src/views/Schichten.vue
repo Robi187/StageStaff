@@ -7,7 +7,7 @@
       <h1 class="greeting-name">{{ auth.isAdmin ? 'Grüezi' : 'Hallo' }}, {{ auth.user?.name?.split(' ')[0] }}</h1>
     </div>
 
-    <div class="tabs">
+    <div v-if="tabs.length > 1" class="tabs">
       <button
         v-for="tab in tabs" :key="tab.id"
         class="tab-btn" :class="{ 'tab-btn--active': activeTab === tab.id }"
@@ -69,14 +69,16 @@ import AntwortenTab from '../components/AntwortenTab.vue';
 import KalenderTab from '../components/KalenderTab.vue';
 import api from '../api/axios';
 
-const tabs = [
-  { id: 'schichten', label: 'SCHICHTEN' },
-  { id: 'antworten', label: 'ANTWORTEN' },
-  { id: 'kalender', label: 'KALENDER' }
-];
-const activeTab = ref('schichten');
-
 const auth = useAuthStore();
+
+const tabs = auth.isAdmin
+  ? [{ id: 'schichten', label: 'SCHICHTEN' }]
+  : [
+      { id: 'schichten', label: 'SCHICHTEN' },
+      { id: 'antworten', label: 'ANTWORTEN' },
+      { id: 'kalender', label: 'KALENDER' }
+    ];
+const activeTab = ref('schichten');
 const appCache = useAppCache();
 const loading = ref(true);
 const occurrences = ref([]);
