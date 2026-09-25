@@ -217,8 +217,11 @@
                       :class="calOccClass(occ)"
                       :title="calOccTitle(occ)"
                     >
-                      <span class="cal-occ-status">{{ calOccLabel(occ) }}</span>
-                      <span class="cal-occ-title">{{ occ.shift.title }}</span>
+                      <div class="cal-occ-row">
+                        <span class="cal-occ-status">{{ calOccLabel(occ) }}</span>
+                        <span class="cal-occ-title">{{ occ.shift.title }}</span>
+                      </div>
+                      <div v-if="calOccComment(occ)" class="cal-occ-comment">„{{ calOccComment(occ) }}“</div>
                     </div>
                   </template>
                 </div>
@@ -487,7 +490,7 @@ function getMatrixLabel(userId, occ) {
   if (!r) return '—';
   if (r.status === 'JA') return 'Ja';
   if (r.status === 'NEIN') return 'Nein';
-  return 'VM';
+  return 'WF';
 }
 
 function getMatrixTime(userId, occ) {
@@ -566,15 +569,15 @@ const isAllUsersMode = computed(() => calUserId.value === '__all__');
 function allUserChipClass(userId, occ) {
   const r = (occ.responses || []).find(r => r.userId === userId);
   if (!r) return 'chip--none';
-  if (r.status === 'JA') return 'chip--ja';
-  if (r.status === 'NEIN') return 'chip--nein';
-  return 'chip--wm';
+  const base = r.status === 'JA' ? 'chip--ja' : r.status === 'NEIN' ? 'chip--nein' : 'chip--wm';
+  return r.comment ? `${base} chip--has-comment` : base;
 }
 
 function allUserChipTitle(user, occ) {
   const r = (occ.responses || []).find(r => r.userId === user.id);
   const status = r ? (r.status === 'JA' ? 'Ja' : r.status === 'NEIN' ? 'Nein' : 'Vielleicht') : 'Offen';
-  return `${user.name} — ${status}`;
+  const base = `${user.name} — ${status}`;
+  return r?.comment ? `${base}\n„${r.comment}“` : base;
 }
 
 function calOccClass(occ) {
@@ -590,13 +593,19 @@ function calOccLabel(occ) {
   if (!r) return '—';
   if (r.status === 'JA') return 'Ja';
   if (r.status === 'NEIN') return 'Nein';
-  return 'VM';
+  return 'WF';
 }
 
 function calOccTitle(occ) {
   const r = (occ.responses || []).find(r => r.userId === calUserId.value);
   const status = r ? (r.status === 'JA' ? 'Ja' : r.status === 'NEIN' ? 'Nein' : 'Vielleicht') : 'Offen';
-  return `${occ.shift.title} — ${status}`;
+  const base = `${occ.shift.title} — ${status}`;
+  return r?.comment ? `${base}\n„${r.comment}“` : base;
+}
+
+function calOccComment(occ) {
+  const r = (occ.responses || []).find(r => r.userId === calUserId.value);
+  return r?.comment || '';
 }
 
 async function fetchCalMonth() {
@@ -1263,14 +1272,21 @@ async function deleteUser(id) {
 
 .cal-occ {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 2px;
   padding: 4px 6px;
   border-radius: 6px;
   font-size: 10px;
   font-family: 'Raleway', system-ui, sans-serif;
   border-left: 3px solid transparent;
   background: rgba(255,255,255,0.03);
+  min-width: 0;
+}
+
+.cal-occ-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -1287,6 +1303,16 @@ async function deleteUser(id) {
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 10px;
+}
+
+.cal-occ-comment {
+  font-size: 9px;
+  color: var(--muted);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'Raleway', system-ui, sans-serif;
 }
 
 .cal-occ--all {
@@ -1325,6 +1351,7 @@ async function deleteUser(id) {
   line-height: 1;
   flex-shrink: 0;
   cursor: default;
+  position: relative;
 }
 
 .chip--ja { background: #22c55e; color: #0c1a10; }
@@ -1334,6 +1361,18 @@ async function deleteUser(id) {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--very-muted);
+}
+
+.chip--has-comment::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--beige);
+  border: 1px solid var(--card);
 }
 
 .cal-occ--ja { border-left-color: #22c55e; }
