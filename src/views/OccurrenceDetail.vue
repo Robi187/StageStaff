@@ -200,7 +200,7 @@ function formatResponseTime(iso) {
 function statusLabel(status) {
   if (status === 'JA') return 'Ja';
   if (status === 'NEIN') return 'Nein';
-  if (status === 'VIELLEICHT') return 'Vielleicht';
+  if (status === 'VIELLEICHT') return 'Wenn möglich frei';
   return status;
 }
 
@@ -246,7 +246,7 @@ async function loadOccurrence() {
     throw new Error(err.response?.data?.error || 'Termin konnte nicht geladen werden.');
   });
   occ.value = data;
-  const myResponse = data.responses[0];
+  const myResponse = data.responses.find(r => r.userId === auth.user?.id);
   if (myResponse) {
     selectedStatus.value = myResponse.status;
     comment.value = myResponse.comment || '';

@@ -151,7 +151,7 @@ function countClass(occ) {
 function statusLabel(status) {
   if (status === 'JA') return 'Zugesagt';
   if (status === 'NEIN') return 'Abgesagt';
-  if (status === 'VIELLEICHT') return 'Vielleicht';
+  if (status === 'VIELLEICHT') return 'Wenn möglich frei';
   return 'Offen';
 }
 

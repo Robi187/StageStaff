@@ -87,7 +87,7 @@
       <div class="cal-legend">
         <div class="cal-legend-item"><span class="legend-dot legend-ja"></span>Ja</div>
         <div class="cal-legend-item"><span class="legend-dot legend-nein"></span>Nein</div>
-        <div class="cal-legend-item"><span class="legend-dot legend-wm"></span>Vielleicht</div>
+        <div class="cal-legend-item"><span class="legend-dot legend-wm"></span>Wenn möglich frei</div>
         <div class="cal-legend-item"><span class="legend-dot legend-none"></span>Offen</div>
       </div>
     </div>
@@ -176,7 +176,7 @@ function allUserChipClass(userId, occ) {
 
 function allUserChipTitle(user, occ) {
   const r = (occ.responses || []).find(r => r.userId === user.id);
-  const status = r ? (r.status === 'JA' ? 'Ja' : r.status === 'NEIN' ? 'Nein' : 'Vielleicht') : 'Offen';
+  const status = r ? (r.status === 'JA' ? 'Ja' : r.status === 'NEIN' ? 'Nein' : 'Wenn möglich frei') : 'Offen';
   const base = `${user.name} — ${status}`;
   return r?.comment ? `${base}\n„${r.comment}“` : base;
 }
@@ -199,7 +199,7 @@ function calOccLabel(occ) {
 
 function calOccTitle(occ) {
   const r = (occ.responses || []).find(r => r.userId === calUserId.value);
-  const status = r ? (r.status === 'JA' ? 'Ja' : r.status === 'NEIN' ? 'Nein' : 'Vielleicht') : 'Offen';
+  const status = r ? (r.status === 'JA' ? 'Ja' : r.status === 'NEIN' ? 'Nein' : 'Wenn möglich frei') : 'Offen';
   const base = `${occ.shift.title} — ${status}`;
   return r?.comment ? `${base}\n„${r.comment}“` : base;
 }
