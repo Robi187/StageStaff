@@ -1,42 +1,60 @@
 <template>
   <Navbar />
-  <div class="page-container">
+  <div :class="activeTab === 'schichten' ? 'page-container' : 'page-container--wide'">
 
     <div class="page-greeting">
       <p class="greeting-date">{{ todayLabel }}</p>
       <h1 class="greeting-name">{{ auth.isAdmin ? 'Grüezi' : 'Hallo' }}, {{ auth.user?.name?.split(' ')[0] }}</h1>
     </div>
 
-    <div v-if="loading" class="loading-state">
-      <div class="spinner"></div>
+    <div class="tabs">
+      <button
+        v-for="tab in tabs" :key="tab.id"
+        class="tab-btn" :class="{ 'tab-btn--active': activeTab === tab.id }"
+        @click="activeTab = tab.id"
+      >{{ tab.label }}</button>
     </div>
 
-    <div v-else class="month-grid">
-      <button
-        v-for="month in months"
-        :key="month.key"
-        class="month-card"
-        :class="{ 'month-card--current': month.isCurrent }"
-        @click="$router.push(`/schichten/${month.year}/${month.monthNum}`)"
-      >
-        <div v-if="month.isCurrent" class="current-dot"></div>
+    <div v-if="activeTab === 'schichten'">
+      <div v-if="loading" class="loading-state">
+        <div class="spinner"></div>
+      </div>
 
-        <div class="month-card-body">
-          <div class="month-name">{{ month.name }}</div>
-          <div class="month-year">{{ month.year }}</div>
-          <div class="month-count">{{ month.occurrences.length }} Termin{{ month.occurrences.length !== 1 ? 'e' : '' }}</div>
-        </div>
+      <div v-else class="month-grid">
+        <button
+          v-for="month in months"
+          :key="month.key"
+          class="month-card"
+          :class="{ 'month-card--current': month.isCurrent }"
+          @click="$router.push(`/schichten/${month.year}/${month.monthNum}`)"
+        >
+          <div v-if="month.isCurrent" class="current-dot"></div>
 
-        <div class="dots-row">
-          <span
-            v-for="occ in month.occurrences"
-            :key="occ.id"
-            class="dot"
-            :class="auth.isAdmin ? adminDotClass(occ) : dotClass(occ.myResponse?.status)"
-            :title="auth.isAdmin ? adminDotTitle(occ) : undefined"
-          ></span>
-        </div>
-      </button>
+          <div class="month-card-body">
+            <div class="month-name">{{ month.name }}</div>
+            <div class="month-year">{{ month.year }}</div>
+            <div class="month-count">{{ month.occurrences.length }} Termin{{ month.occurrences.length !== 1 ? 'e' : '' }}</div>
+          </div>
+
+          <div class="dots-row">
+            <span
+              v-for="occ in month.occurrences"
+              :key="occ.id"
+              class="dot"
+              :class="auth.isAdmin ? adminDotClass(occ) : dotClass(occ.myResponse?.status)"
+              :title="auth.isAdmin ? adminDotTitle(occ) : undefined"
+            ></span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div v-else-if="activeTab === 'antworten'">
+      <AntwortenTab />
+    </div>
+
+    <div v-else-if="activeTab === 'kalender'">
+      <KalenderTab />
     </div>
 
   </div>
@@ -47,7 +65,16 @@ import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useAppCache } from '../stores/appCache';
 import Navbar from '../components/Navbar.vue';
+import AntwortenTab from '../components/AntwortenTab.vue';
+import KalenderTab from '../components/KalenderTab.vue';
 import api from '../api/axios';
+
+const tabs = [
+  { id: 'schichten', label: 'SCHICHTEN' },
+  { id: 'antworten', label: 'ANTWORTEN' },
+  { id: 'kalender', label: 'KALENDER' }
+];
+const activeTab = ref('schichten');
 
 const auth = useAuthStore();
 const appCache = useAppCache();
@@ -153,6 +180,35 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  padding: 10px 20px;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  width: auto;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab-btn:hover { color: var(--text); opacity: 1; }
+.tab-btn--active { color: var(--beige); border-bottom-color: var(--beige); }
+
+@media (max-width: 640px) {
+  .tab-btn { padding: 10px 12px; letter-spacing: 0.1em; }
+}
+
 .page-greeting {
   margin-bottom: 48px;
 }

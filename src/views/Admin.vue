@@ -77,165 +77,12 @@
 
       <!-- Tab 2: ANTWORTEN -->
       <div v-if="activeTab === 'antworten'" class="tab-content">
-        <div class="week-nav">
-          <button class="week-arrow" @click="prevWeek">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-          </button>
-          <span class="week-label">{{ weekLabel }}</span>
-          <button class="week-arrow" @click="nextWeek">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </button>
-        </div>
-        <div v-if="loadingMatrix" class="loading-state"><div class="spinner"></div></div>
-        <div v-else-if="matrixOccs.length === 0" class="empty-state">Keine Termine in dieser Woche.</div>
-        <div v-else class="matrix-wrapper">
-          <!-- Desktop: users as rows, dates as columns -->
-          <table class="matrix-table desktop-matrix">
-            <thead>
-              <tr>
-                <th class="name-col">Mitarbeiter</th>
-                <th v-for="occ in matrixOccs" :key="occ.id" class="shift-col">
-                  <div class="col-wd">{{ getWdShort(occ.date) }}</div>
-                  <div class="col-date">{{ getDayNum(occ.date) }}.{{ getMonthNum(occ.date) }}</div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="user in matrixUsers" :key="user.id">
-                <td class="name-cell">
-                  <div class="user-row-inner">
-                    <div class="mini-avatar">{{ user.name[0] }}</div>
-                    <span>{{ user.name }}</span>
-                  </div>
-                </td>
-                <td v-for="occ in matrixOccs" :key="occ.id" class="status-cell">
-                  <span class="matrix-pill" :class="getMatrixClass(user.id, occ)" :data-tooltip="getMatrixTime(user.id, occ)">
-                    {{ getMatrixLabel(user.id, occ) }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <!-- Mobile: dates as rows, user avatars as columns (flexbox) -->
-          <div class="mobile-matrix">
-            <div class="mobile-row mobile-header-row">
-              <div class="mobile-date-col"></div>
-              <div class="mobile-user-col" v-for="user in matrixUsers" :key="user.id">
-                <div class="mini-avatar">{{ user.name[0] }}</div>
-              </div>
-            </div>
-            <div class="mobile-row" v-for="occ in matrixOccs" :key="occ.id">
-              <div class="mobile-date-col">
-                <div class="col-wd">{{ getWdShort(occ.date) }}</div>
-                <div class="col-date">{{ getDayNum(occ.date) }}.{{ getMonthNum(occ.date) }}</div>
-              </div>
-              <div class="mobile-user-col" v-for="user in matrixUsers" :key="user.id">
-                <span class="matrix-pill" :class="getMatrixClass(user.id, occ)" :data-tooltip="getMatrixTime(user.id, occ)">
-                  {{ getMatrixLabel(user.id, occ) }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AntwortenTab />
       </div>
 
       <!-- Tab 3: KALENDER -->
       <div v-if="activeTab === 'kalender'" class="tab-content">
-        <div class="cal-controls">
-          <div class="user-select-wrap">
-            <label class="cal-label">MITARBEITER</label>
-            <select v-model="calUserId" class="user-select">
-              <option value="__all__">Alle Mitarbeiter</option>
-              <option v-for="user in matrixUsers" :key="user.id" :value="user.id">
-                {{ user.name }}
-              </option>
-              <option v-if="matrixUsers.length === 0" :value="''" disabled>Keine Mitarbeiter</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="cal-month-nav">
-          <button class="week-arrow" @click="prevCalMonth">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-          </button>
-          <span class="cal-month-label">{{ calMonthLabel }}</span>
-          <button class="week-arrow" @click="nextCalMonth">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </button>
-        </div>
-
-        <div v-if="loadingCal" class="loading-state"><div class="spinner"></div></div>
-        <div v-else-if="!calUserId" class="empty-state">Bitte einen Mitarbeiter auswählen.</div>
-        <div v-else class="calendar">
-          <div class="cal-weekdays">
-            <div v-for="wd in CAL_WEEKDAYS" :key="wd" class="cal-weekday">{{ wd }}</div>
-          </div>
-          <div class="cal-grid">
-            <div
-              v-for="cell in calCells"
-              :key="cell.key"
-              class="cal-cell"
-              :class="{
-                'cal-cell--empty': !cell.inMonth,
-                'cal-cell--today': cell.isToday
-              }"
-            >
-              <template v-if="cell.inMonth">
-                <div class="cal-day-num">{{ cell.day }}</div>
-                <div v-if="cell.occs.length > 0" class="cal-occs">
-                  <template v-if="isAllUsersMode">
-                    <div
-                      v-for="occ in cell.occs"
-                      :key="occ.id"
-                      class="cal-occ cal-occ--all"
-                    >
-                      <div class="cal-occ-title-all">{{ occ.shift.title }}</div>
-                      <div class="cal-occ-users">
-                        <span
-                          v-for="user in matrixUsers"
-                          :key="user.id"
-                          class="cal-user-chip"
-                          :class="allUserChipClass(user.id, occ)"
-                          :title="allUserChipTitle(user, occ)"
-                        >{{ user.name[0] }}</span>
-                      </div>
-                    </div>
-                  </template>
-                  <template v-else>
-                    <div
-                      v-for="occ in cell.occs"
-                      :key="occ.id"
-                      class="cal-occ"
-                      :class="calOccClass(occ)"
-                      :title="calOccTitle(occ)"
-                    >
-                      <div class="cal-occ-row">
-                        <span class="cal-occ-status">{{ calOccLabel(occ) }}</span>
-                        <span class="cal-occ-title">{{ occ.shift.title }}</span>
-                      </div>
-                      <div v-if="calOccComment(occ)" class="cal-occ-comment">„{{ calOccComment(occ) }}“</div>
-                    </div>
-                  </template>
-                </div>
-              </template>
-            </div>
-          </div>
-
-          <div class="cal-legend">
-            <div class="cal-legend-item"><span class="legend-dot legend-ja"></span>Ja</div>
-            <div class="cal-legend-item"><span class="legend-dot legend-nein"></span>Nein</div>
-            <div class="cal-legend-item"><span class="legend-dot legend-wm"></span>Vielleicht</div>
-            <div class="cal-legend-item"><span class="legend-dot legend-none"></span>Offen</div>
-          </div>
-        </div>
+        <KalenderTab />
       </div>
 
       <!-- Tab 4: BENUTZER -->
@@ -356,6 +203,8 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAppCache } from '../stores/appCache';
 import Navbar from '../components/Navbar.vue';
+import AntwortenTab from '../components/AntwortenTab.vue';
+import KalenderTab from '../components/KalenderTab.vue';
 import api from '../api/axios';
 
 const appCache = useAppCache();
@@ -366,16 +215,12 @@ const tabs = [
   { id: 'schichten', label: 'SCHICHTEN' },
   { id: 'antworten', label: 'ANTWORTEN' },
   { id: 'kalender', label: 'KALENDER' },
-  { id: 'benutzer', label: 'BENUTZER' }
+  { id: 'benutzer', label: 'MITARBEITER' }
 ];
 const activeTab = ref('schichten');
 
 const WEEKDAYS_SHORT = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 const MONTHS = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
-
-function getDayNum(d) { return new Date(d).getDate(); }
-function getMonthNum(d) { return new Date(d).getMonth() + 1; }
-function getWdShort(d) { return WEEKDAYS_SHORT[new Date(d).getDay()]; }
 
 function formatDate(dateStr) {
   const d = new Date(dateStr);
@@ -418,11 +263,8 @@ const addingOcc = ref(false);
 const occError = ref('');
 const newOcc = ref({ date: '', deadline: '' });
 
-// ── Antworten tab ────────────────────────────────
+// ── Week navigation (used by Schichten tab) ─────
 const weekOffset = ref(0);
-const matrixCache = ref({}); // keyed "year-month" → occurrences[]
-const matrixUsers = ref([]);
-const loadingMatrix = ref(false);
 
 function getWeekBounds(offset) {
   const today = new Date();
@@ -447,25 +289,9 @@ const weekLabel = computed(() => {
   return `${fmt(monday)}${yearSuffix} – ${fmt(sunday)} ${sunday.getFullYear()}`;
 });
 
-const matrixOccs = computed(() => {
-  const { monday, sunday } = weekBounds.value;
-  const all = Object.values(matrixCache.value).flat();
-  return all
-    .filter(occ => { const d = new Date(occ.date); return d >= monday && d <= sunday; })
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
-});
-
 function prevWeek() { weekOffset.value--; }
 function nextWeek() { weekOffset.value++; }
 function openOcc(id) { router.push(`/schichten/${id}?from=admin`); }
-
-function weekOccs(shift) {
-  const { monday, sunday } = weekBounds.value;
-  return shift.occurrences.filter(occ => {
-    const d = new Date(occ.date);
-    return d >= monday && d <= sunday;
-  });
-}
 
 const sortedWeekOccs = computed(() => {
   const { monday, sunday } = weekBounds.value;
@@ -475,183 +301,6 @@ const sortedWeekOccs = computed(() => {
       .map(occ => ({ ...occ, shift }))
     )
     .sort((a, b) => new Date(a.date) - new Date(b.date));
-});
-
-function getMatrixClass(userId, occ) {
-  const r = (occ.responses || []).find(r => r.userId === userId);
-  if (!r) return 'pill-none';
-  if (r.status === 'JA') return 'pill-ja';
-  if (r.status === 'NEIN') return 'pill-nein';
-  return 'pill-wm';
-}
-
-function getMatrixLabel(userId, occ) {
-  const r = (occ.responses || []).find(r => r.userId === userId);
-  if (!r) return '—';
-  if (r.status === 'JA') return 'Ja';
-  if (r.status === 'NEIN') return 'Nein';
-  return 'WF';
-}
-
-function getMatrixTime(userId, occ) {
-  const r = (occ.responses || []).find(r => r.userId === userId);
-  if (!r?.updatedAt) return null;
-  const d = new Date(r.updatedAt);
-  const pad = n => String(n).padStart(2, '0');
-  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}. ${pad(d.getHours())}:${pad(d.getMinutes())} Uhr`;
-}
-
-// ── Kalender tab ─────────────────────────────────
-const CAL_WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const calMonthOffset = ref(0);
-const calUserId = ref('');
-const loadingCal = ref(false);
-
-const calRefDate = computed(() => {
-  const d = new Date();
-  d.setDate(1);
-  d.setHours(0, 0, 0, 0);
-  d.setMonth(d.getMonth() + calMonthOffset.value);
-  return d;
-});
-
-const calMonthLabel = computed(() => {
-  const d = calRefDate.value;
-  const MONTHS_FULL = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-                       'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-  return `${MONTHS_FULL[d.getMonth()]} ${d.getFullYear()}`;
-});
-
-function prevCalMonth() { calMonthOffset.value--; }
-function nextCalMonth() { calMonthOffset.value++; }
-
-const calMonthOccs = computed(() => {
-  const d = calRefDate.value;
-  const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
-  return matrixCache.value[key] || [];
-});
-
-const calCells = computed(() => {
-  const d = calRefDate.value;
-  const year = d.getFullYear();
-  const month = d.getMonth();
-  const firstDow = new Date(year, month, 1).getDay(); // 0=Sun
-  const leadingBlanks = firstDow === 0 ? 6 : firstDow - 1; // Monday-first
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const cells = [];
-  for (let i = 0; i < leadingBlanks; i++) {
-    cells.push({ key: `blank-${i}`, inMonth: false, day: null, occs: [], isToday: false });
-  }
-  for (let day = 1; day <= daysInMonth; day++) {
-    const cellDate = new Date(year, month, day);
-    const isToday = cellDate.getTime() === today.getTime();
-    const occs = calMonthOccs.value.filter(occ => {
-      const od = new Date(occ.date);
-      return od.getFullYear() === year && od.getMonth() === month && od.getDate() === day;
-    }).sort((a, b) => new Date(a.date) - new Date(b.date));
-    cells.push({ key: `d-${day}`, inMonth: true, day, occs, isToday });
-  }
-  const total = cells.length;
-  const remainder = total % 7;
-  if (remainder !== 0) {
-    for (let i = 0; i < 7 - remainder; i++) {
-      cells.push({ key: `blank-end-${i}`, inMonth: false, day: null, occs: [], isToday: false });
-    }
-  }
-  return cells;
-});
-
-const isAllUsersMode = computed(() => calUserId.value === '__all__');
-
-function allUserChipClass(userId, occ) {
-  const r = (occ.responses || []).find(r => r.userId === userId);
-  if (!r) return 'chip--none';
-  const base = r.status === 'JA' ? 'chip--ja' : r.status === 'NEIN' ? 'chip--nein' : 'chip--wm';
-  return r.comment ? `${base} chip--has-comment` : base;
-}
-
-function allUserChipTitle(user, occ) {
-  const r = (occ.responses || []).find(r => r.userId === user.id);
-  const status = r ? (r.status === 'JA' ? 'Ja' : r.status === 'NEIN' ? 'Nein' : 'Vielleicht') : 'Offen';
-  const base = `${user.name} — ${status}`;
-  return r?.comment ? `${base}\n„${r.comment}“` : base;
-}
-
-function calOccClass(occ) {
-  const r = (occ.responses || []).find(r => r.userId === calUserId.value);
-  if (!r) return 'cal-occ--none';
-  if (r.status === 'JA') return 'cal-occ--ja';
-  if (r.status === 'NEIN') return 'cal-occ--nein';
-  return 'cal-occ--wm';
-}
-
-function calOccLabel(occ) {
-  const r = (occ.responses || []).find(r => r.userId === calUserId.value);
-  if (!r) return '—';
-  if (r.status === 'JA') return 'Ja';
-  if (r.status === 'NEIN') return 'Nein';
-  return 'WF';
-}
-
-function calOccTitle(occ) {
-  const r = (occ.responses || []).find(r => r.userId === calUserId.value);
-  const status = r ? (r.status === 'JA' ? 'Ja' : r.status === 'NEIN' ? 'Nein' : 'Vielleicht') : 'Offen';
-  const base = `${occ.shift.title} — ${status}`;
-  return r?.comment ? `${base}\n„${r.comment}“` : base;
-}
-
-function calOccComment(occ) {
-  const r = (occ.responses || []).find(r => r.userId === calUserId.value);
-  return r?.comment || '';
-}
-
-async function fetchCalMonth() {
-  const d = calRefDate.value;
-  const y = d.getFullYear();
-  const m = d.getMonth() + 1;
-  const key = `${y}-${m}`;
-  const needUsers = matrixUsers.value.length === 0;
-  const needOccs = !(key in matrixCache.value);
-
-  if (!needUsers && !needOccs) return;
-
-  loadingCal.value = true;
-  try {
-    const promises = [];
-    if (needUsers) promises.push(api.get('/users').then(r => ({ type: 'users', data: r.data })));
-    if (needOccs) {
-      promises.push(
-        appCache.getOrFetch(`occurrences:${key}`, async () => {
-          const { data } = await api.get(`/occurrences?year=${y}&month=${m}`);
-          return data;
-        }).then(data => ({ type: 'occs', key, data }))
-      );
-    }
-    const results = await Promise.all(promises);
-    for (const r of results) {
-      if (r.type === 'users') {
-        matrixUsers.value = r.data.filter(u => u.role === 'MITARBEITER');
-      } else if (r.type === 'occs') {
-        matrixCache.value = { ...matrixCache.value, [r.key]: r.data.occurrences };
-      }
-    }
-    if (!calUserId.value) {
-      calUserId.value = '__all__';
-    }
-  } finally {
-    loadingCal.value = false;
-  }
-}
-
-watch(activeTab, async (tab) => {
-  if (tab === 'kalender') await fetchCalMonth();
-});
-
-watch(calMonthOffset, async () => {
-  if (activeTab.value === 'kalender') await fetchCalMonth();
 });
 
 // ── Benutzer tab ─────────────────────────────────
@@ -664,14 +313,6 @@ const copied = ref(false);
 // ── Lifecycle ─────────────────────────────────────
 onMounted(async () => {
   await Promise.all([fetchShifts(), fetchUsers()]);
-});
-
-watch(activeTab, async (tab) => {
-  if (tab === 'antworten') await fetchMatrix();
-});
-
-watch(weekOffset, async () => {
-  if (activeTab.value === 'antworten') await fetchMatrix();
 });
 
 // ── Data fetching ──────────────────────────────────
@@ -693,44 +334,6 @@ async function fetchShifts() {
     dashOccs.value = dash.occurrences || [];
   } finally {
     loadingShifts.value = false;
-  }
-}
-
-async function fetchMatrix() {
-  const { monday, sunday } = weekBounds.value;
-  const needed = new Set([
-    `${monday.getFullYear()}-${monday.getMonth() + 1}`
-  ]);
-  if (sunday.getMonth() !== monday.getMonth() || sunday.getFullYear() !== monday.getFullYear()) {
-    needed.add(`${sunday.getFullYear()}-${sunday.getMonth() + 1}`);
-  }
-  const missing = [...needed].filter(k =>
-    !(k in matrixCache.value) || appCache.peek(`occurrences:${k}`) === null
-  );
-  if (missing.length === 0 && matrixUsers.value.length > 0) return;
-
-  loadingMatrix.value = true;
-  try {
-    const fetches = missing.map(k => {
-      const [y, m] = k.split('-');
-      return appCache.getOrFetch(`occurrences:${k}`, async () => {
-        const { data } = await api.get(`/occurrences?year=${y}&month=${m}`);
-        return data;
-      }).then(data => ({ k, occs: data.occurrences }));
-    });
-    const needUsers = matrixUsers.value.length === 0;
-    const [usersRes, ...results] = await Promise.all([
-      needUsers ? api.get('/users') : Promise.resolve(null),
-      ...fetches
-    ]);
-    if (needUsers && usersRes) {
-      matrixUsers.value = usersRes.data.filter(u => u.role === 'MITARBEITER');
-    }
-    results.forEach(({ k, occs }) => {
-      matrixCache.value = { ...matrixCache.value, [k]: occs };
-    });
-  } finally {
-    loadingMatrix.value = false;
   }
 }
 
@@ -1059,361 +662,6 @@ async function deleteUser(id) {
 
 .week-arrow:hover { border-color: var(--border-hover); color: var(--text); opacity: 1; }
 
-/* Matrix */
-.matrix-wrapper { overflow-x: auto; }
-
-.mobile-matrix { display: none; }
-.desktop-matrix { display: table; }
-
-.mobile-row {
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid var(--border);
-  padding: 8px 0;
-}
-.mobile-header-row { padding: 6px 0; }
-.mobile-date-col {
-  width: 54px;
-  flex-shrink: 0;
-  text-align: left;
-  padding: 0 4px;
-}
-.mobile-user-col {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.matrix-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-  min-width: 500px;
-}
-
-.matrix-table th, .matrix-table td {
-  padding: 10px 8px;
-  text-align: center;
-  border-bottom: 1px solid var(--border);
-}
-
-.name-col { text-align: left; min-width: 130px; }
-.shift-col { min-width: 60px; }
-
-.col-wd { font-size: 9px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; font-family: 'DM Mono', monospace; }
-.col-date { font-size: 13px; font-weight: 500; color: var(--text); font-family: 'DM Mono', monospace; }
-
-.name-cell { text-align: left; }
-.user-row-inner { display: flex; align-items: center; gap: 8px; }
-
-.mini-avatar {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--beige);
-  flex-shrink: 0;
-}
-
-.matrix-pill {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-  position: relative;
-}
-
-.matrix-pill[data-tooltip]:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: #1a1727;
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-size: 11px;
-  font-weight: 500;
-  white-space: nowrap;
-  padding: 5px 10px;
-  border-radius: 6px;
-  z-index: 50;
-  pointer-events: none;
-  font-family: 'DM Mono', monospace;
-  letter-spacing: 0.02em;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-}
-
-.pill-ja { background: var(--badge-green-bg); color: var(--badge-green-text); }
-.pill-nein { background: var(--badge-red-bg); color: var(--badge-red-text); }
-.pill-wm { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-.pill-none { color: var(--very-muted); }
-
-/* Kalender */
-.cal-controls {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.user-select-wrap { display: flex; flex-direction: column; gap: 6px; flex: 1; }
-
-.cal-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  color: var(--muted);
-  font-family: 'Raleway', system-ui, sans-serif;
-}
-
-.user-select {
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 13px;
-  font-family: 'Raleway', system-ui, sans-serif;
-  width: 100%;
-  cursor: pointer;
-  transition: border-color 0.15s;
-}
-.user-select:hover, .user-select:focus { border-color: var(--border-hover); outline: none; }
-
-.cal-month-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  gap: 12px;
-}
-
-.cal-month-label {
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-  text-align: center;
-  flex: 1;
-  letter-spacing: 0.02em;
-}
-
-.calendar {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--card);
-}
-
-.cal-weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  background: rgba(255,255,255,0.02);
-  border-bottom: 1px solid var(--border);
-}
-
-.cal-weekday {
-  padding: 8px 6px;
-  text-align: center;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  color: var(--muted);
-  font-family: 'Raleway', system-ui, sans-serif;
-}
-
-.cal-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-}
-
-.cal-cell {
-  min-height: 88px;
-  padding: 6px 6px 8px;
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  position: relative;
-}
-
-.cal-cell:nth-child(7n) { border-right: none; }
-.cal-grid > .cal-cell:nth-last-child(-n+7) { border-bottom: none; }
-
-.cal-cell--empty { background: rgba(0,0,0,0.15); }
-
-.cal-cell--today .cal-day-num {
-  color: var(--beige);
-  font-weight: 600;
-}
-
-.cal-day-num {
-  font-size: 12px;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-  padding: 2px 4px;
-}
-
-.cal-occs {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.cal-occ {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 4px 6px;
-  border-radius: 6px;
-  font-size: 10px;
-  font-family: 'Raleway', system-ui, sans-serif;
-  border-left: 3px solid transparent;
-  background: rgba(255,255,255,0.03);
-  min-width: 0;
-}
-
-.cal-occ-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.cal-occ-status {
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  flex-shrink: 0;
-  font-size: 9px;
-}
-
-.cal-occ-title {
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 10px;
-}
-
-.cal-occ-comment {
-  font-size: 9px;
-  color: var(--muted);
-  font-style: italic;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-family: 'Raleway', system-ui, sans-serif;
-}
-
-.cal-occ--all {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 4px;
-  padding: 5px 6px 6px;
-  border-left-color: var(--border);
-}
-
-.cal-occ-title-all {
-  font-size: 10px;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-weight: 500;
-}
-
-.cal-occ-users {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-}
-
-.cal-user-chip {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  font-weight: 700;
-  font-family: 'Raleway', system-ui, sans-serif;
-  line-height: 1;
-  flex-shrink: 0;
-  cursor: default;
-  position: relative;
-}
-
-.chip--ja { background: #22c55e; color: #0c1a10; }
-.chip--nein { background: #ef4444; color: #1a0808; }
-.chip--wm { background: #f59e0b; color: #1c1206; }
-.chip--none {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--very-muted);
-}
-
-.chip--has-comment::after {
-  content: '';
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--beige);
-  border: 1px solid var(--card);
-}
-
-.cal-occ--ja { border-left-color: #22c55e; }
-.cal-occ--ja .cal-occ-status { color: #22c55e; }
-.cal-occ--nein { border-left-color: #ef4444; }
-.cal-occ--nein .cal-occ-status { color: #ef4444; }
-.cal-occ--wm { border-left-color: #f59e0b; }
-.cal-occ--wm .cal-occ-status { color: #f59e0b; }
-.cal-occ--none { border-left-color: var(--border); }
-.cal-occ--none .cal-occ-status { color: var(--very-muted); }
-.cal-occ--none .cal-occ-title { color: var(--muted); }
-
-.cal-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  padding: 12px 14px;
-  border-top: 1px solid var(--border);
-  background: rgba(255,255,255,0.02);
-}
-
-.cal-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--muted);
-  font-family: 'Raleway', system-ui, sans-serif;
-}
-
-.legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-.legend-ja { background: #22c55e; }
-.legend-nein { background: #ef4444; }
-.legend-wm { background: #f59e0b; }
-.legend-none { background: var(--border); }
-
 /* Users */
 .invite-card { margin-bottom: 32px; }
 .invite-header { margin-bottom: 16px; }
@@ -1520,8 +768,6 @@ async function deleteUser(id) {
   .shift-block-info { flex-direction: column; align-items: flex-start; gap: 4px; }
   .user-actions { flex-direction: column; gap: 4px; }
   .tab-btn { padding: 10px 12px; letter-spacing: 0.1em; }
-  .desktop-matrix { display: none; }
-  .mobile-matrix { display: block; }
 
   .invite-url-row { flex-direction: column; }
   .btn-copy { width: 100%; justify-content: center; }
@@ -1536,16 +782,5 @@ async function deleteUser(id) {
   .user-item { flex-wrap: wrap; row-gap: 10px; }
   .user-meta { min-width: 0; }
   .user-email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-  .cal-cell { min-height: 62px; padding: 3px 3px 5px; }
-  .cal-day-num { font-size: 10px; padding: 1px 2px; }
-  .cal-occ { padding: 2px 3px; gap: 3px; }
-  .cal-occ-title { display: none; }
-  .cal-occ-status { font-size: 9px; }
-  .cal-weekday { font-size: 9px; padding: 6px 2px; letter-spacing: 0.06em; }
-  .cal-occ-title-all { display: none; }
-  .cal-occ--all { padding: 3px; }
-  .cal-user-chip { width: 12px; height: 12px; font-size: 7px; }
-  .cal-occ-users { gap: 2px; }
 }
 </style>

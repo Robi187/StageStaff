@@ -29,16 +29,13 @@ router.get('/', authMiddleware, async (req, res) => {
 
     const start = new Date(y, m - 1, 1);
     const end   = new Date(y, m, 0, 23, 59, 59, 999);
-    const isAdmin = req.user.role === 'ADMIN';
 
     const occurrences = await prisma.shiftOccurrence.findMany({
       where: { date: { gte: start, lte: end } },
       orderBy: { date: 'asc' },
       include: {
         shift: { select: { id: true, title: true, startTime: true, endTime: true } },
-        responses: isAdmin
-          ? { include: { user: { select: { id: true, name: true } } } }
-          : { where: { userId: req.user.userId } }
+        responses: { include: { user: { select: { id: true, name: true } } } }
       }
     });
 
@@ -62,14 +59,14 @@ router.get('/:id', authMiddleware, async (req, res) => {
   try {
     if (!isValidId(req.params.id)) return res.status(400).json({ error: 'Ungültige ID' });
 
-    const isAdmin = req.user.role === 'ADMIN';
     const occ = await prisma.shiftOccurrence.findUnique({
       where: { id: req.params.id },
       include: {
         shift: true,
-        responses: isAdmin
-          ? { include: { user: { select: { id: true, name: true } } }, orderBy: { updatedAt: 'asc' } }
-          : { where: { userId: req.user.userId } }
+        responses: {
+          include: { user: { select: { id: true, name: true } } },
+          orderBy: { updatedAt: 'asc' }
+        }
       }
     });
     if (!occ) return res.status(404).json({ error: 'Termin nicht gefunden' });

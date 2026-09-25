@@ -38,11 +38,14 @@ router.patch('/me/password', authMiddleware, async (req, res) => {
   }
 });
 
-// GET /api/users (admin only)
-router.get('/', authMiddleware, adminMiddleware, async (req, res) => {
+// GET /api/users — admins see all fields, staff only sees id/name/role
+router.get('/', authMiddleware, async (req, res) => {
   try {
+    const isAdmin = req.user.role === 'ADMIN';
     const users = await prisma.user.findMany({
-      select: { id: true, name: true, email: true, role: true, createdAt: true },
+      select: isAdmin
+        ? { id: true, name: true, email: true, role: true, createdAt: true }
+        : { id: true, name: true, role: true },
       orderBy: { name: 'asc' }
     });
     res.json(users);
