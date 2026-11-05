@@ -12,7 +12,22 @@
     <div class="month-header">
       <h1 class="month-title">{{ monthName }}</h1>
       <span class="month-year-label">{{ year }}</span>
+      <button
+        v-if="!auth.isAdmin && selectableOccs.length > 0"
+        class="select-toggle"
+        :class="{ 'select-toggle--active': selectMode }"
+        @click="toggleSelectMode"
+      >{{ selectMode ? 'Fertig' : 'Auswählen' }}</button>
     </div>
+
+    <div v-if="selectMode" class="select-tools">
+      <button class="chip" @click="selectOpen">Alle offenen</button>
+      <button class="chip" @click="selectAll">Alle</button>
+      <button v-if="selected.size > 0" class="chip chip--ghost" @click="selected = new Set()">Keine</button>
+    </div>
+
+    <div v-if="bulkMessage" class="success-box bulk-msg">{{ bulkMessage }}</div>
+    <div v-if="bulkError" class="error-box bulk-msg">{{ bulkError }}</div>
 
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
@@ -24,7 +39,7 @@
       Keine Termine in diesem Monat.
     </div>
 
-    <div v-else class="occ-list">
+    <div v-else class="occ-list" :class="{ 'occ-list--bulk': selectMode }">
       <button v-if="pastCount > 0" class="past-toggle" @click="showPast = !showPast">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           :style="{ transform: showPast ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }">
@@ -37,8 +52,13 @@
         v-for="occ in visibleOccs"
         :key="occ.id"
         class="occ-row"
-        :class="{ 'occ-row--cancelled': occ.cancelled, 'occ-row--past': isPast(occ.date) }"
-        @click="$router.push(`/schichten/${occ.id}`)"
+        :class="{
+          'occ-row--cancelled': occ.cancelled,
+          'occ-row--past': isPast(occ.date),
+          'occ-row--selected': selectMode && selected.has(occ.id),
+          'occ-row--disabled': selectMode && !isSelectable(occ)
+        }"
+        @click="onRowClick(occ)"
       >
         <!-- Date column -->
         <div class="occ-date-col">
@@ -69,10 +89,26 @@
           <span class="resp-count" :class="countClass(occ)">{{ occ._count.responses }}/{{ totalStaff }}</span>
         </div>
 
-        <svg class="row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <span v-if="selectMode" class="row-check" :class="{ 'row-check--on': selected.has(occ.id), 'row-check--hidden': !isSelectable(occ) }">
+          <svg v-if="selected.has(occ.id)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </span>
+        <svg v-else class="row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </button>
+    </div>
+
+    <div v-if="selectMode" class="bulk-bar">
+      <div class="bulk-bar-inner">
+        <span class="bulk-count">{{ selected.size }} ausgewählt</span>
+        <div class="bulk-actions">
+          <button class="bulk-btn bulk-btn--ja" :disabled="!selected.size || bulkSaving" @click="bulkRespond('JA')">Zusagen</button>
+          <button class="bulk-btn bulk-btn--nein" :disabled="!selected.size || bulkSaving" @click="bulkRespond('NEIN')">Absagen</button>
+          <button class="bulk-btn bulk-btn--wm" :disabled="!selected.size || bulkSaving" @click="bulkRespond('VIELLEICHT')">Wenn möglich frei</button>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -80,13 +116,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useAppCache } from '../stores/appCache';
 import Navbar from '../components/Navbar.vue';
 import api from '../api/axios';
 
 const route = useRoute();
+const router = useRouter();
 const auth = useAuthStore();
 const appCache = useAppCache();
 
@@ -146,6 +183,72 @@ function countClass(occ) {
   if (ja === 0) return '';
   if (ja >= totalStaff.value) return 'count--full';
   return 'count--partial';
+}
+
+// ── Mehrfachauswahl (staff) ──
+const selectMode = ref(false);
+const selected = ref(new Set());
+const bulkSaving = ref(false);
+const bulkMessage = ref('');
+const bulkError = ref('');
+
+function isSelectable(occ) {
+  return !occ.cancelled && !isPast(occ.date) && !isDeadlinePassed(occ);
+}
+
+const selectableOccs = computed(() => monthOccs.value.filter(isSelectable));
+
+function toggleSelectMode() {
+  selectMode.value = !selectMode.value;
+  selected.value = new Set();
+  bulkError.value = '';
+}
+
+function onRowClick(occ) {
+  if (!selectMode.value) {
+    router.push(`/schichten/${occ.id}`);
+    return;
+  }
+  if (!isSelectable(occ)) return;
+  const next = new Set(selected.value);
+  next.has(occ.id) ? next.delete(occ.id) : next.add(occ.id);
+  selected.value = next;
+}
+
+function selectOpen() {
+  selected.value = new Set(selectableOccs.value.filter(o => !o.myResponse).map(o => o.id));
+}
+
+function selectAll() {
+  selected.value = new Set(selectableOccs.value.map(o => o.id));
+}
+
+async function bulkRespond(status) {
+  bulkSaving.value = true;
+  bulkError.value = '';
+  bulkMessage.value = '';
+  try {
+    const { data } = await api.post('/responses/bulk', {
+      occurrenceIds: [...selected.value],
+      status
+    });
+    const updated = new Set(data.updated);
+    monthOccs.value = monthOccs.value.map(o => updated.has(o.id)
+      ? { ...o, myResponse: { ...(o.myResponse || {}), status } }
+      : o);
+    appCache.invalidate('dashboard', `occurrences:${year}-${month}`);
+
+    const n = data.updated.length;
+    bulkMessage.value = `${n} Termin${n !== 1 ? 'e' : ''} als „${statusLabel(status)}“ gespeichert.`
+      + (data.skipped ? ` ${data.skipped} übersprungen (abgesagt oder Frist abgelaufen).` : '');
+    setTimeout(() => { bulkMessage.value = ''; }, 4000);
+    selectMode.value = false;
+    selected.value = new Set();
+  } catch (err) {
+    bulkError.value = err.response?.data?.error || 'Fehler beim Speichern.';
+  } finally {
+    bulkSaving.value = false;
+  }
 }
 
 function statusLabel(status) {
@@ -373,7 +476,125 @@ onMounted(async () => {
   margin-left: 12px;
 }
 
+/* Mehrfachauswahl */
+.select-toggle {
+  margin-left: auto;
+  align-self: center;
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid var(--gold-border);
+  border-radius: 999px;
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Raleway', system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.select-toggle--active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+
+.select-tools {
+  display: flex;
+  gap: 8px;
+  margin: -16px 0 16px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 5px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: 'Raleway', system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.chip:hover { border-color: var(--border-hover); }
+.chip--ghost { background: transparent; color: var(--muted); }
+
+.bulk-msg { margin-bottom: 16px; }
+
+.occ-row--selected { border-color: var(--gold); background: var(--gold-glow); }
+.occ-row--disabled { cursor: default; }
+.occ-row--disabled:hover { transform: none; border-color: var(--border); background: var(--card); }
+
+.row-check {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-left: 12px;
+  border: 1.5px solid var(--border-hover);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bg);
+}
+
+.row-check--on { background: var(--gold); border-color: var(--gold); }
+.row-check--hidden { visibility: hidden; }
+
+/* Platz für die fixe Leiste unten */
+.occ-list--bulk { padding-bottom: 120px; }
+
+.bulk-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.bulk-bar-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bulk-count {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  white-space: nowrap;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.bulk-btn {
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Raleway', system-ui, sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.bulk-btn:disabled { opacity: 0.4; cursor: default; }
+.bulk-btn--ja   { background: var(--success-bg); border-color: #4a7e5e; color: #b8e6c5; }
+.bulk-btn--nein { background: var(--error-bg);   border-color: #a03535; color: #f0a0a0; }
+.bulk-btn--wm   { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.35); color: #f59e0b; }
+
 @media (max-width: 480px) {
+  .bulk-actions { width: 100%; }
+  .bulk-btn { flex: 1; padding: 10px 6px; font-size: 12px; white-space: normal; }
   .occ-row { padding: 12px 14px; }
   .occ-divider { margin: 0 12px; }
   .status-label { display: none; }
