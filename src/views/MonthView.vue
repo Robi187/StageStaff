@@ -593,8 +593,9 @@ onMounted(async () => {
 .bulk-btn--wm   { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.35); color: #f59e0b; }
 
 @media (max-width: 480px) {
-  .bulk-actions { width: 100%; }
-  .bulk-btn { flex: 1; padding: 10px 6px; font-size: 12px; white-space: normal; }
+  .bulk-bar-inner { gap: 8px; }
+  .bulk-actions { flex-basis: 100%; }
+  .bulk-btn { flex: 1; padding: 10px 6px; font-size: 12px; white-space: normal; line-height: 1.25; }
   .occ-row { padding: 12px 14px; }
   .occ-divider { margin: 0 12px; }
   .status-label { display: none; }
